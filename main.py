@@ -56,22 +56,45 @@ SIMILAR_CHARS = {
 }
 
 
-def check_similar_chars(password):
-    """Проверить пароль на похожие символы ВМЕСТЕ."""
-    # Группы похожих символов
+def validate_password(password):
+    """Проверить пароль и вернуть ВСЕ ошибки сразу."""
+    errors = []
+
+    if not password:
+        errors.append("Пароль не может быть пустым!")
+        return errors
+
+    if len(password) < 8:
+        errors.append(f"Минимум 8 символов! Сейчас: {len(password)}")
+
+    if not any(c.isalpha() for c in password):
+        errors.append("Добавьте хотя бы 1 букву!")
+
+    if not any(c.isdigit() for c in password):
+        errors.append("Добавьте хотя бы 1 цифру!")
+
+    special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+    if not any(c in special_chars for c in password):
+        errors.append("Добавьте хотя бы 1 спецсимвол!")
+
+    # Проверка 2+ подряд
+    for i in range(len(password) - 1):
+        if password[i].lower() == password[i+1].lower():
+            errors.append(f"Два одинаковых подряд: '{password[i]}{password[i+1]}'")
+            break
+
+    # Проверка похожих из группы
     similar_groups = [
         ('0', 'O', 'o'),
         ('l', 'I', 'i', '1', '|', '!'),
     ]
-    
-    warnings = []
     for group in similar_groups:
-        found_in_group = [c for c in password if c in group]
-        if len(found_in_group) >= 2:
-            chars = ', '.join(set(found_in_group))
-            warnings.append(f"Используются похожие символы вместе: {chars}")
-    
-    return warnings
+        found = [c for c in password if c in group]
+        if len(found) >= 2:
+            chars = ', '.join(set(found))
+            errors.append(f"Похожие из одной группы: {chars}")
+
+    return errors
 
 
 # ==========================================
@@ -289,58 +312,13 @@ def add_new_record(store, generator):
                     password = None
                     break
 
-                if not password:
-                    print("  [ОШИБКА] Пароль не может быть пустым!")
-                    print("  [ПОДСКАЗКА] Введите пароль или '0' для возврата.")
-                    continue
-
-                if len(password) < 8:
-                    print(f"  [ОШИБКА] Минимум 8 символов! Сейчас: {len(password)}")
-                    continue
-
-                if not any(c.isalpha() for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 букву!")
-                    continue
-
-                if not any(c.isdigit() for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 цифру!")
-                    continue
-
-                special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-                if not any(c in special_chars for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 спецсимвол (!@#$%...)")
-                    continue
-
-                # ПРОВЕРКА НА ПОВТОРЯЮЩИЕСЯ СИМВОЛЫ (2+ подряд)
-                has_repeated = False
-                for i in range(len(password) - 1):
-                    if password[i].lower() == password[i+1].lower():
-                        print(f"  [ОШИБКА] Два одинаковых символа подряд: '{password[i]}{password[i+1]}'")
-                        print("  [ПРИЧИНА] Такие пароли легко взломать.")
-                        print("  [РЕШЕНИЕ] Чередуйте символы: aB3$kL9!")
-                        has_repeated = True
-                        break
-                
-                if has_repeated:
-                    continue
-
-                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ - ПО ГРУППАМ
-                similar_groups = [
-                    ('0', 'O', 'o'),
-                    ('l', 'I', 'i', '1', '|', '!'),
-                ]
-                similar_block = False
-                for group in similar_groups:
-                    found = [c for c in password if c in group]
-                    if len(found) >= 2:
-                        chars = ', '.join(set(found))
-                        print(f"  [ОШИБКА] Похожие символы из одной группы: {chars}")
-                        print("  [ПРИЧИНА] Их легко перепутать при вводе.")
-                        print("  [РЕШЕНИЕ] Оставьте только один из этих: " + ' ИЛИ '.join(set(found)))
-                        similar_block = True
-                        break
-                
-                if similar_block:
+                # ПРОВЕРКА ВСЕХ ОШИБОК ОДНОВРЕМЕННО
+                errors = validate_password(password)
+                if errors:
+                    print(f"\n  [ОШИБКИ] ({len(errors)}):")
+                    for i, err in enumerate(errors, 1):
+                        print(f"    {i}. {err}")
+                    print("  [РЕШЕНИЕ] Исправьте все ошибки или '0' для возврата.")
                     continue
 
                 strength = generator.check_password_strength(password)
@@ -458,51 +436,13 @@ def change_password(store, generator):
             while True:
                 password = input("  Введите новый пароль: ").strip()
 
-                if not password:
-                    print("  [ОШИБКА] Пароль не может быть пустым!")
-                    continue
-
-                if len(password) < 8:
-                    print(f"  [ОШИБКА] Минимум 8 символов! Сейчас: {len(password)}")
-                    continue
-
-                if not any(c.isalpha() for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 букву!")
-                    continue
-
-                if not any(c.isdigit() for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 цифру!")
-                    continue
-
-                special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-                if not any(c in special_chars for c in password):
-                    print("  [ОШИБКА] Добавьте хотя бы 1 спецсимвол (!@#$%...)")
-                    continue
-
-                # Проверка 2+ подряд
-                has_repeated = False
-                for i in range(len(password) - 1):
-                    if password[i].lower() == password[i+1].lower():
-                        print(f"  [ОШИБКА] Два одинаковых подряд: '{password[i]}{password[i+1]}'")
-                        has_repeated = True
-                        break
-                if has_repeated:
-                    continue
-
-                # Проверка похожих из группы
-                similar_groups = [
-                    ('0', 'O', 'o'),
-                    ('l', 'I', 'i', '1', '|', '!'),
-                ]
-                similar_block = False
-                for group in similar_groups:
-                    found = [c for c in password if c in group]
-                    if len(found) >= 2:
-                        chars = ', '.join(set(found))
-                        print(f"  [ОШИБКА] Похожие из одной группы: {chars}")
-                        similar_block = True
-                        break
-                if similar_block:
+                # ПРОВЕРКА ВСЕХ ОШИБОК ОДНОВРЕМЕННО
+                errors = validate_password(password)
+                if errors:
+                    print(f"\n  [ОШИБКИ] ({len(errors)}):")
+                    for i, err in enumerate(errors, 1):
+                        print(f"    {i}. {err}")
+                    print("  [РЕШЕНИЕ] Исправьте все ошибки.")
                     continue
 
                 print(f"  [OK] Пароль принят!")
