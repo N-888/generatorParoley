@@ -61,7 +61,7 @@ def check_similar_chars(password):
     # Группы похожих символов
     similar_groups = [
         ('0', 'O', 'o'),
-        ('l', 'I', 'i', '1', '|'),
+        ('l', 'I', 'i', '1', '|', '!'),
     ]
     
     warnings = []
@@ -327,7 +327,7 @@ def add_new_record(store, generator):
                 # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ - ПО ГРУППАМ
                 similar_groups = [
                     ('0', 'O', 'o'),
-                    ('l', 'I', 'i', '1', '|'),
+                    ('l', 'I', 'i', '1', '|', '!'),
                 ]
                 similar_block = False
                 for group in similar_groups:
