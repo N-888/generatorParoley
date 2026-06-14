@@ -275,7 +275,7 @@ def add_new_record(store, generator):
             print("  - Хотя бы 1 цифра (0-9)")
             print("  - Хотя бы 1 спецсимвол (!@#$%^&*)")
             print("  - НЕЛЬЗЯ: 2+ одинаковых подряд (aa, 11, !!)")
-            print("  - НЕЛЬЗЯ: похожие вместе (0+O, l+I+1)")
+            print("  - НЕЛЬЗЯ: 2+ похожих из одной группы (0+O, l+I+1)")
             print("  - НЕ ВМЕСТЕ: похожие символы (0+O, l+I+1)")
             print()
 
@@ -325,7 +325,7 @@ def add_new_record(store, generator):
                 if has_repeated:
                     continue
 
-                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ ВМЕСТЕ
+                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ - ПО ГРУППАМ
                 similar_groups = [
                     ('0', 'O', 'o'),
                     ('l', 'I', 'i', '1', '|'),
@@ -335,9 +335,9 @@ def add_new_record(store, generator):
                     found = [c for c in password if c in group]
                     if len(found) >= 2:
                         chars = ', '.join(set(found))
-                        print(f"  [ОШИБКА] Похожие символы вместе: {chars}")
+                        print(f"  [ОШИБКА] Похожие символы из одной группы: {chars}")
                         print("  [ПРИЧИНА] Их легко перепутать при вводе.")
-                        print("  [РЕШЕНИЕ] Оставьте только один тип: 0 ИЛИ O, l ИЛИ I")
+                        print("  [РЕШЕНИЕ] Оставьте только один из этих: " + ' ИЛИ '.join(set(found)))
                         similar_block = True
                         break
                 
