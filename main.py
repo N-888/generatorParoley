@@ -221,16 +221,13 @@ def add_new_record(store, generator):
             found_similar = [f"'{c}' ({similar_chars[c]})" for c in password if c in similar_chars]
 
             if found_similar:
-                print(f"\n  ⚠️  ВНИМАНИЕ! В пароле обнаружены похожие символы:")
+                print(f"\n  ❌ ЗАПРЕТ! В пароле обнаружены похожие символы:")
                 for s in found_similar:
                     print(f"     • {s}")
-                print("  💡 Это может затруднить ввод пароля вручную.")
-                print("  💡 Рекомендуется заменить их на более чёткие символы.")
-
-                confirm = input("\n  Сохранить пароль с похожими символами? (да/нет): ").strip().lower()
-                if confirm != "да":
-                    print("  🔄 Введите пароль заново.")
-                    return
+                print("  💡 Такие символы легко перепутать при вводе.")
+                print("  💡 Используйте генератор паролей (пункт 5) или введите другой пароль.")
+                print("  🚫 Сохранение невозможно с такими символами!")
+                return
         else:
             print("  ❌ Неверный выбор!")
             return
