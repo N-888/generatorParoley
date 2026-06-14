@@ -117,104 +117,254 @@ def show_all_records(store):
 # ==========================================
 
 def add_new_record(store, generator):
-    """Добавить новую запись."""
+    """Добавить новую запись с жёсткими проверками."""
     print("\n" + "-" * 50)
     print("  ДОБАВЛЕНИЕ НОВОЙ ЗАПИСИ:")
     print("-" * 50)
 
-    try:
-        name = input("  Название сервиса: ").strip()
-        if not name:
-            print("  Ошибка: название не может быть пустым!")
-            return
+    # ==========================================
+    # ЭТАП 1: НАЗВАНИЕ СЕРВИСА
+    # ==========================================
+    while True:
+        name = input("  Название сервиса (Gmail, Telegram...): ").strip()
 
-        # Проверяем уникальность - сравниваем напрямую
+        # Проверка на пустое название
+        if not name:
+            print("  [ОШИБКА] Название не может быть пустым!")
+            print("  [ПОДСКАЗКА] Введите: Gmail, Telegram, VK и т.д.")
+            logger.warning("Попытка создания записи с пустым названием")
+            continue
+
+        # Проверка на слишком короткое название
+        if len(name) < 2:
+            print("  [ОШИБКА] Название слишком короткое (минимум 2 символа)!")
+            continue
+
+        # Проверка на уникальность
         all_records = store.get_all_records()
+        name_exists = False
         for record in all_records:
             if record['name'].lower() == name.lower():
-                print(f"\n  ЗАПРЕТ! Запись '{name}' уже существует!")
-                print(f"  Удалите старую запись или используйте другое название.")
-                return
+                print(f"  [ОШИБКА] Запись '{name}' уже существует!")
+                print(f"  [ПОДСКАЗКА] Используйте другое название или удалите старую.")
+                logger.warning(f"Попытка создать дубликат: {name}")
+                name_exists = True
+                break
 
+        if name_exists:
+            continue
+
+        # Проверка на допустимые символы (только буквы, цифры, пробелы)
+        if not all(c.isalnum() or c in ' _-@.' for c in name):
+            print("  [ОШИБКА] Название содержит недопустимые символы!")
+            print("  [ПОДСКАЗКА] Используйте только буквы, цифры, пробелы, дефисы.")
+            continue
+
+        # Название прошло все проверки
+        print(f"  [OK] Название: {name}")
+        logger.info(f"Название принято: {name}")
+        break
+
+    # ==========================================
+    # ЭТАП 2: ЛОГИН ИЛИ EMAIL
+    # ==========================================
+    while True:
         login = input("  Логин или email: ").strip()
-        if not login:
-            print("  Ошибка: логин не может быть пустым!")
-            return
 
+        # Проверка на пустой логин
+        if not login:
+            print("  [ОШИБКА] Логин не может быть пустым!")
+            print("  [ПОДСКАЗКА] Введите email (user@mail.com) или логин (@username)")
+            logger.warning("Попытка создания записи с пустым логином")
+            continue
+
+        # Проверка на слишком короткий логин
+        if len(login) < 3:
+            print("  [ОШИБКА] Логин слишком короткий (минимум 3 символа)!")
+            continue
+
+        # Определяем тип: email или логин
+        is_email = '@' in login and '.' in login
+        is_login = login.startswith('@') or login.isalnum()
+
+        if is_email:
+            # Проверка email
+            parts = login.split('@')
+            if len(parts) != 2 or not parts[0] or not parts[1]:
+                print("  [ОШИБКА] Неверный формат email!")
+                print("  [ПОДСКАЗКА] Пример: user@gmail.com")
+                logger.warning(f"Неверный формат email: {login}")
+                continue
+
+            if '.' not in parts[1]:
+                print("  [ОШИБКА] Неверный формат email!")
+                print("  [ПОДСКАЗКА] Должна быть точка в домене: user@mail.com")
+                continue
+
+            print(f"  [OK] Email: {login}")
+
+        elif is_login:
+            # Проверка логина
+            if login.startswith('@'):
+                # Убираем @ для проверки
+                login_clean = login[1:]
+                if not login_clean or len(login_clean) < 2:
+                    print("  [ОШИБКА] Логин после @ слишком короткий!")
+                    print("  [ПОДСКАЗКА] Пример: @username")
+                    continue
+            else:
+                login_clean = login
+
+            print(f"  [OK] Логин: {login}")
+
+        else:
+            print("  [ОШИБКА] Неверный формат!")
+            print("  [ПОДСКАЗКА] Введите:")
+            print("    - Email: user@gmail.com")
+            print("    - Логин: @username или username")
+            logger.warning(f"Неверный формат логина: {login}")
+            continue
+
+        logger.info(f"Логин принят: {login}")
+        break
+
+    # ==========================================
+    # ЭТАП 3: ПАРОЛЬ
+    # ==========================================
+    while True:
         print("\n  Как создать пароль?")
-        print("  1. Сгенерировать автоматически (рекомендуется)")
-        print("  2. Ввести свой пароль")
+        print("  1. Сгенерировать автоматически (БЕЗОПАСНО)")
+        print("  2. Ввести свой пароль (с проверкой)")
 
         choice = input("  Ваш выбор (1/2): ").strip()
 
         if choice == "1":
+            # Генерация
             print("\n  Настройки генерации:")
-            length_input = input("  Длина пароля (по умолчанию 16): ").strip()
-            length = int(length_input) if length_input.isdigit() else 16
+            length_input = input("  Длина (по умолчанию 16): ").strip()
+            length = int(length_input) if length_input.isdigit() and int(length_input) >= 8 else 16
 
-            exclude_similar = input("  Исключить похожие (0/O, l/I)? (да/нет, по умолчанию да): ").strip().lower()
+            exclude_similar = input("  Исключить похожие 0/O,l/I? (да/нет, по умолчанию да): ").strip().lower()
             exclude_similar = exclude_similar != "нет"
 
-            use_special = input("  Спецсимволы (!@#$%...)? (да/нет, по умолчанию да): ").strip().lower()
+            use_special = input("  Спецсимволы !@#$? (да/нет, по умолчанию да): ").strip().lower()
             use_special = use_special != "нет"
 
             password = generator.generate(length=length, exclude_similar=exclude_similar, use_special=use_special)
-            print(f"\n  Сгенерированный пароль: {password}")
+            print(f"\n  [OK] Сгенерированный пароль: {password}")
+
+            # Проверка надёжности
+            strength = generator.check_password_strength(password)
+            print(f"  [ОЦЕНКА] {strength['level']}")
+
+            # Подтверждение
+            confirm = input("  Использовать этот пароль? (да/нет): ").strip().lower()
+            if confirm == "да":
+                logger.info(f"Пароль сгенерирован для {name}")
+                break
+            else:
+                print("  Генерирую заново...")
+                continue
 
         elif choice == "2":
-            print("\n  ПАРАМЕТРЫ БЕЗОПАСНОГО ПАРОЛЯ:")
+            # Ручной ввод
+            print("\n  ТРЕБОВАНИЯ К ПАРОЛЮ:")
             print("  - Минимум 8 символов")
-            print("  - Буквы + цифры + спецсимволы")
-            print("  - ЗАПРЕЩЕНЫ похожие символы: 0, O, l, I, 1")
+            print("  - Хотя бы 1 буква (a-z, A-Z)")
+            print("  - Хотя бы 1 цифра (0-9)")
+            print("  - Хотя бы 1 спецсимвол (!@#$%^&*)")
+            print("  - ЗАПРЕЩЕНЫ: 0, O, o, l, I, i, 1, |")
             print()
+
             password = input("  Введите пароль: ").strip()
 
+            # Проверка на пустой пароль
             if not password:
-                print("  Ошибка: пароль не может быть пустым!")
-                return
+                print("  [ОШИБКА] Пароль не может быть пустым!")
+                logger.warning("Попытка создания записи с пустым паролем")
+                continue
+
+            # Проверка длины
+            if len(password) < 8:
+                print("  [ОШИБКА] Пароль слишком короткий (минимум 8 символов)!")
+                print(f"  [ПОДСКАЗКА] Сейчас: {len(password)} символов, нужно: 8+")
+                continue
+
+            # Проверка наличия буквы
+            if not any(c.isalpha() for c in password):
+                print("  [ОШИБКА] Пароль должен содержать хотя бы 1 букву!")
+                print("  [ПОДСКАЗКА] Добавьте буквы: a-z или A-Z")
+                continue
+
+            # Проверка наличия цифры
+            if not any(c.isdigit() for c in password):
+                print("  [ОШИБКА] Пароль должен содержать хотя бы 1 цифру!")
+                print("  [ПОДСКАЗКА] Добавьте цифры: 0-9")
+                continue
+
+            # Проверка наличия спецсимвола
+            special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+            if not any(c in special_chars for c in password):
+                print("  [ОШИБКА] Пароль должен содержать хотя бы 1 спецсимвол!")
+                print("  [ПОДСКАЗКА] Добавьте: !@#$%^&*")
+                continue
 
             # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ
             found_similar = check_similar_chars(password)
-
             if found_similar:
-                print()
-                print("  ОШИБКА! Обнаружены похожие символы:")
+                print("\n  [ОШИБКА] Обнаружены запрещённые похожие символы:")
                 for s in found_similar:
                     print(f"    - {s}")
                 print()
-                print("  ПРИЧИНА: такие символы легко перепутать при вводе.")
+                print("  [ПРИЧИНА] Эти символы легко перепутать при вводе.")
                 print()
-                print("  РЕШЕНИЕ:")
-                print("  1. Используйте генератор (пункт 1)")
-                print("  2. Замените похожие символы:")
-                print("     0 -> 2-9 | O -> A,B,C | l -> k,m,n | I -> H,J,K | 1 -> 2-9")
-                return
+                print("  [РЕШЕНИЕ] Замените:")
+                print("    0 -> 2-9 | O -> A,B,C | l -> k,m,n | I -> H,J,K | 1 -> 2-9")
+                logger.warning(f"Пароль содержит похожие символы: {password}")
+                continue
 
-            if len(password) < 4:
-                print("  Ошибка: минимум 4 символа!")
-                return
-
-        else:
-            print("  Неверный выбор!")
-            return
-
-        # Сохраняем
-        success = store.add_record(name, login, password)
-
-        if success:
-            print(f"\n  Запись '{name}' добавлена!")
+            # Пароль прошёл все проверки
             strength = generator.check_password_strength(password)
-            print(f"  Оценка: {strength['level']}")
+            print(f"\n  [OK] Пароль принят!")
+            print(f"  [ОЦЕНКА] {strength['level']} ({strength['score']}/{strength['max_score']})")
+
             if strength['feedback']:
-                print("  Рекомендации:")
+                print("  [РЕКОМЕНДАЦИИ]:")
                 for tip in strength['feedback']:
                     print(f"    - {tip}")
-        else:
-            print("\n  Ошибка сохранения!")
 
-    except Exception as e:
-        print(f"  Ошибка: {e}")
-        logger.error(f"Ошибка: {e}")
+            logger.info(f"Ручной пароль принят для {name}")
+            break
+
+        else:
+            print("  [ОШИБКА] Выберите 1 или 2!")
+
+    # ==========================================
+    # ЭТАП 4: ПОДТВЕРЖДЕНИЕ СОХРАНЕНИЯ
+    # ==========================================
+    print("\n" + "-" * 50)
+    print("  ИТОГ:")
+    print(f"    Сервис: {name}")
+    print(f"    Логин: {login}")
+    print(f"    Пароль: {'*' * len(password)}")
+    print("-" * 50)
+
+    while True:
+        confirm = input("  Сохранить? (да/нет): ").strip().lower()
+        if confirm == "да":
+            success = store.add_record(name, login, password)
+            if success:
+                print(f"\n  [УСПЕХ] Запись '{name}' сохранена!")
+                logger.info(f"Создана запись: {name}")
+            else:
+                print("\n  [ОШИБКА] Не удалось сохранить!")
+                logger.error(f"Ошибка сохранения: {name}")
+            return
+        elif confirm == "нет":
+            print("  [ОТМЕНА] Запись не сохранена.")
+            return
+        else:
+            print("  [ОШИБКА] Введите 'да' или 'нет'!")
 
 
 # ==========================================
