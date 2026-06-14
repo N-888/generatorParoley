@@ -1,8 +1,10 @@
 @echo off
+chcp 65001 >nul
 echo.
 echo ========================================
-echo    МЕНЕДЖЕР ПАРОЛЕЙ
+echo    🔐 МЕНЕДЖЕР ПАРОЛЕЙ
 echo ========================================
 echo.
-python main.py
+cd /d "C:\Users\User\Documents\BIZNES\generatorParoley"
+"C:\Users\User\AppData\Local\Programs\Python\Python314\python.exe" main.py
 pause

@@ -22,3 +22,14 @@
 2026-06-14 21:03:19,994 [WARNING] Запись «ТЕСТ» уже существует
 2026-06-14 21:03:29,583 [INFO] Запрошены все записи (всего: 3)
 2026-06-14 21:03:54,727 [INFO] Запрошены все записи (всего: 3)
+2026-06-14 21:06:03,546 [INFO] Запрошены все записи (всего: 3)
+2026-06-14 21:07:40,595 [INFO] Генератор паролей создан
+2026-06-14 21:07:40,596 [INFO] Загружено 3 записей из C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:07:40,596 [INFO] Хранилище создано: C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:08:27,713 [INFO] Загружено 3 записей из C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:11:47,441 [INFO] Генератор паролей создан
+2026-06-14 21:11:47,442 [INFO] Загружено 3 записей из C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:11:47,442 [INFO] Хранилище создано: C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:13:24,818 [INFO] Генератор паролей создан
+2026-06-14 21:13:24,818 [INFO] Загружено 3 записей из C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
+2026-06-14 21:13:24,818 [INFO] Хранилище создано: C:\Users\User\Documents\BIZNES\GeneratorParoley\passwords.json
