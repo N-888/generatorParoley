@@ -146,8 +146,15 @@ def add_new_record(store, generator):
             print("  [ОШИБКА] Минимум 2 символа!")
             continue
 
+        # Проверяем уникальность
         all_records = store.get_all_records()
         name_exists = False
+        
+        # Отладка: показываем что загружено
+        logger.info(f"Всего записей: {len(all_records)}")
+        for r in all_records:
+            logger.info(f"  Запись: '{r['name']}' (lower: '{r['name'].lower()}')")
+        
         for record in all_records:
             if record['name'].lower() == name.lower():
                 print(f"  [ОШИБКА] Запись '{name}' уже существует!")

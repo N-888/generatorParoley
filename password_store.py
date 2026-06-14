@@ -204,16 +204,20 @@ class PasswordStore:
     def get_all_records(self):
         """
         Получить все записи из хранилища.
-
-        Возвращает:
-            list: Список всех записей
-
-        Пример:
-            store = PasswordStore()
-            records = store.get_all_records()
-            for record in records:
-                print(record['name'])
         """
+        # Перечитываем файл чтобы быть уверенными что данные актуальны
+        try:
+            if os.path.exists(self.filename):
+                with open(self.filename, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.records = data
+                    logger.info(f"Перечитано {len(data)} записей из файла")
+            else:
+                logger.info("Файл не найден, список пуст")
+                self.records = []
+        except Exception as e:
+            logger.error(f"Ошибка чтения файла: {e}")
+        
         logger.info(f"Запрошены все записи (всего: {len(self.records)})")
         return self.records
 
