@@ -266,6 +266,8 @@ def add_new_record(store, generator):
             print("  - Хотя бы 1 цифра (0-9)")
             print("  - Хотя бы 1 спецсимвол (!@#$%^&*)")
             print("  - ЗАПРЕЩЕНЫ: 0, O, o, l, I, i, 1, |")
+            print("  - НЕЛЬЗЯ: 3+ одинаковых символа подряд")
+            print("  - НЕЛЬЗЯ: abc, 123, qwe и другие цепочки")
             print()
 
             while True:
@@ -301,7 +303,38 @@ def add_new_record(store, generator):
                     print("  [ОШИБКА] Добавьте хотя бы 1 спецсимвол (!@#$%...)")
                     continue
 
-                found_similar = check_similar_chars(password)
+                # ПРОВЕРКА НА ПОВТОРЯЮЩИЕСЯ СИМВОЛЫ
+                from collections import Counter
+                char_count = Counter(password.lower())
+                repeated = [(char, count) for char, count in char_count.items() if count >= 3]
+                if repeated:
+                    print("  [ОШИБКА] Слишком много повторяющихся символов!")
+                    for char, count in repeated:
+                        print(f"    - Символ '{char}' повторяется {count} раз!")
+                    print("  [ПРИЧИНА] Такие пароли легко взломать.")
+                    print("  [РЕШЕНИЕ] Используйте разные символы: aB3$kL9!")
+                    continue
+
+                # ПРОВЕРКА НА ПОСЛЕДОВАТЕЛЬНОСТИ
+                import string
+                bad_sequences = ["abcdefghijklmnopqrstuvwxyz",
+                               "zyxwvutsrqponmlkjihgfedcba",
+                               "01234567890",
+                               "9876543210"]
+                lower_pw = password.lower()
+                for seq in bad_sequences:
+                    for i in range(len(seq) - 2):
+                        if seq[i:i+3] in lower_pw:
+                            print(f"  [ОШИБКА] Обнаружена последовательность: '{seq[i:i+3]}'")
+                            print("  [ПРИЧИНА] Последовательности легко угадать.")
+                            print("  [РЕШЕНИЕ] Перемешайте символы: a3B$k9L!")
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    # Нет последовательностей — продолжаем
+                    found_similar = check_similar_chars(password)
                 if found_similar:
                     print("\n  [ОШИБКА] Запрещённые похожие символы:")
                     for s in found_similar:
