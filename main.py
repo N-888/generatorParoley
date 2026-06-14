@@ -96,14 +96,14 @@ def show_main_menu():
 def show_all_records(store):
     """Показать все записи."""
     print("\n" + "-" * 50)
-    print("  ВСЕ ЗАПИСИ:")
+    print("  📋 ВСЕ ЗАПИСИ:")
     print("-" * 50)
 
     try:
         # Читаем файл по АБСОЛЮТНОМУ пути
         if not os.path.exists(PASSWORDS_FILE):
-            print(f"  Файл не найден: {PASSWORDS_FILE}")
-            print("  Создайте первую запись (пункт 2).")
+            print(f"  ❌ Файл не найден: {PASSWORDS_FILE}")
+            print("  💡 Создайте первую запись (пункт 2).")
             return
             
         with open(PASSWORDS_FILE, 'r', encoding='utf-8') as f:
@@ -112,8 +112,8 @@ def show_all_records(store):
         logger.info(f"Загружено {len(records)} записей из {PASSWORDS_FILE}")
         
         if not records:
-            print("  Записей пока нет.")
-            print("  Добавьте первую запись (пункт 2).")
+            print("  📭 Записей пока нет.")
+            print("  💡 Добавьте первую запись (пункт 2).")
             return
 
         for i, record in enumerate(records, 1):
@@ -121,23 +121,23 @@ def show_all_records(store):
             login = record.get('login', 'Нет логина')
             password = record.get('password', '')
             
-            print(f"  {i}. {name}")
-            print(f"     Логин: {login}")
-            print(f"     Пароль: {'*' * len(password)}")
+            print(f"  {i}. 📝 {name}")
+            print(f"     👤 Логин: {login}")
+            print(f"     🔑 Пароль: {'*' * len(password)}")
             print()
 
         print("-" * 50)
-        print(f"  Всего записей: {len(records)}")
+        print(f"  📊 Всего записей: {len(records)}")
         print("-" * 50)
         
     except FileNotFoundError:
-        print(f"  Файл не найден: {PASSWORDS_FILE}")
-        print("  Создайте первую запись (пункт 2).")
+        print(f"  ❌ Файл не найден: {PASSWORDS_FILE}")
+        print("  💡 Создайте первую запись (пункт 2).")
     except json.JSONDecodeError as e:
-        print(f"  Ошибка формата файла: {e}")
-        print("  Файл повреждён.")
+        print(f"  ❌ Ошибка формата файла: {e}")
+        print("  💡 Файл повреждён.")
     except Exception as e:
-        print(f"  Ошибка чтения: {e}")
+        print(f"  ❌ Ошибка чтения: {e}")
         logger.error(f"Ошибка чтения записей: {e}")
 
 
@@ -148,8 +148,8 @@ def show_all_records(store):
 def add_new_record(store, generator):
     """Добавить новую запись с жёсткими проверками. ВЕЗДЕ ЦИКЛЫ."""
     print("\n" + "-" * 50)
-    print("  ДОБАВЛЕНИЕ НОВОЙ ЗАПИСИ:")
-    print("  Для отмены введите 'отмена' на любом этапе")
+    print("  ➕ ДОБАВЛЕНИЕ НОВОЙ ЗАПИСИ:")
+    print("  💡 Для отмены введите 'отмена' на любом этапе")
     print("-" * 50)
 
     name = None
@@ -160,19 +160,19 @@ def add_new_record(store, generator):
     # ЭТАП 1: НАЗВАНИЕ СЕРВИСА
     # ==========================================
     while True:
-        name = input("  Название сервиса: ").strip()
+        name = input("  📝 Название сервиса: ").strip()
 
         if name.lower() == "отмена":
-            print("  [ОТМЕНА] Возврат в меню.")
+            print("  🚪 [ОТМЕНА] Возврат в меню.")
             return
 
         if not name:
-            print("  [ОШИБКА] Название не может быть пустым!")
-            print("  [ПОДСКАЗКА] Введите: Gmail, Telegram, VK...")
+            print("  ❌ [ОШИБКА] Название не может быть пустым!")
+            print("  💡 [ПОДСКАЗКА] Введите: Gmail, Telegram, VK...")
             continue
 
         if len(name) < 2:
-            print("  [ОШИБКА] Минимум 2 символа!")
+            print("  ❌ [ОШИБКА] Минимум 2 символа!")
             continue
 
         # ПРЯМАЯ ПРОВЕРКА ФАЙЛА
@@ -186,8 +186,8 @@ def add_new_record(store, generator):
                     logger.info(f"  Сравниваю: '{name.lower()}' == '{item_name.lower()}'")
                     if item_name.lower() == name.lower():
                         name_exists = True
-                        print(f"  [ОШИБКА] Запись '{name}' уже существует!")
-                        print(f"  [ПОДСКАЗКА] Введите другое название или 'отмена' для выхода.")
+                        print(f"  ⚠️ [ОШИБКА] Запись '{name}' уже существует!")
+                        print(f"  💡 [ПОДСКАЗКА] Введите другое название или 'отмена' для выхода.")
                         break
         except FileNotFoundError:
             logger.info("Файл passwords.json не найден")
@@ -198,30 +198,30 @@ def add_new_record(store, generator):
             continue
 
         if not all(c.isalnum() or c in ' _-@.' for c in name):
-            print("  [ОШИБКА] Недопустимые символы!")
-            print("  [ПОДСКАЗКА] Только буквы, цифры, пробелы, дефисы.")
+            print("  ❌ [ОШИБКА] Недопустимые символы!")
+            print("  💡 [ПОДСКАЗКА] Только буквы, цифры, пробелы, дефисы.")
             continue
 
-        print(f"  [OK] Название: {name}")
+        print(f"  ✅ [OK] Название: {name}")
         break
 
     # ==========================================
     # ЭТАП 2: ЛОГИН ИЛИ EMAIL
     # ==========================================
     while True:
-        login = input("  Логин или email: ").strip()
+        login = input("  👤 Логин или email: ").strip()
 
         if login.lower() == "отмена":
-            print("  [ОТМЕНА] Возврат в меню.")
+            print("  🚪 [ОТМЕНА] Возврат в меню.")
             return
 
         if not login:
-            print("  [ОШИБКА] Логин не может быть пустым!")
-            print("  [ПОДСКАЗКА] Введите email (user@mail.com) или логин (@username)")
+            print("  ❌ [ОШИБКА] Логин не может быть пустым!")
+            print("  💡 [ПОДСКАЗКА] Введите email (user@mail.com) или логин (@username)")
             continue
 
         if len(login) < 3:
-            print("  [ОШИБКА] Минимум 3 символа!")
+            print("  ❌ [ОШИБКА] Минимум 3 символа!")
             continue
 
         is_email = '@' in login and '.' in login
@@ -229,15 +229,15 @@ def add_new_record(store, generator):
         if is_email:
             parts = login.split('@')
             if len(parts) != 2 or not parts[0] or not parts[1] or '.' not in parts[1]:
-                print("  [ОШИБКА] Неверный формат email!")
-                print("  [ПРИМЕР] user@gmail.com")
+                print("  ❌ [ОШИБКА] Неверный формат email!")
+                print("  💡 [ПРИМЕР] user@gmail.com")
                 continue
-            print(f"  [OK] Email: {login}")
+            print(f"  ✅ [OK] Email: {login}")
         elif login.startswith('@') or login.isalnum():
-            print(f"  [OK] Логин: {login}")
+            print(f"  ✅ [OK] Логин: {login}")
         else:
-            print("  [ОШИБКА] Неверный формат!")
-            print("  [ПОДСКАЗКА] Email: user@mail.com | Логин: @username")
+            print("  ❌ [ОШИБКА] Неверный формат!")
+            print("  💡 [ПОДСКАЗКА] Email: user@mail.com | Логин: @username")
             continue
 
         break
@@ -246,10 +246,10 @@ def add_new_record(store, generator):
     # ЭТАП 3: ПАРОЛЬ
     # ==========================================
     while True:
-        print("\n  Как создать пароль?")
-        print("  1. Сгенерировать автоматически (БЕЗОПАСНО)")
-        print("  2. Ввести свой пароль (с проверкой)")
-        print("  0. Назад (сменить название)")
+        print("\n  🔑 Как создать пароль?")
+        print("  1. 🎲 Сгенерировать автоматически (БЕЗОПАСНО)")
+        print("  2. ✏️ Ввести свой пароль (с проверкой)")
+        print("  0. ⬅️ Назад (сменить название)")
 
         choice = input("  Ваш выбор (0/1/2): ").strip()
 
