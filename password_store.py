@@ -58,23 +58,20 @@ class PasswordStore:
     # ИНИЦИАЛИЗАЦИЯ
     # ==========================================
 
-    def __init__(self, filename="passwords.json"):
+    def __init__(self, filename=None):
         """
         Инициализация хранилища паролей.
-
-        Аргументы:
-            filename (str): Имя файла для хранения паролей
-                           (по умолчанию "passwords.json")
         """
-        # Сохраняем имя файла
+        # АБСОЛЮТНЫЙ путь к файлу
+        if filename is None:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            filename = os.path.join(script_dir, "passwords.json")
+        
         self.filename = filename
-
-        # Загружаем данные из файла (если он существует)
         self.records = self._load_from_file()
 
-        # Сообщаем о создании хранилища
-        logger.info(f"Хранилище паролей создано: {filename}")
-        print(f"  ✅ Хранилище готово: {filename}")
+        logger.info(f"Хранилище создано: {filename}")
+        print(f"  Хранилище готово: {filename}")
 
     # ==========================================
     # ЗАГРУЗКА ДАННЫХ ИЗ ФАЙЛА

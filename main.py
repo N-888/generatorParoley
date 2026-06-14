@@ -12,6 +12,10 @@ import logging
 import sys
 import io
 
+# АБСОЛЮТНЫЙ ПУТЬ К ФАЙЛУ ПАРОЛЕЙ
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PASSWORDS_FILE = os.path.join(SCRIPT_DIR, "passwords.json")
+
 # Настраиваем кодировку для Windows
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
@@ -96,20 +100,16 @@ def show_all_records(store):
     print("-" * 50)
 
     try:
-        # Читаем файл напрямую
-        import json
-        import os
-        
-        filename = "passwords.json"
-        if not os.path.exists(filename):
-            print("  Файл passwords.json не найден!")
-            print("  Создайте хотя бы одну запись (пункт 2).")
+        # Читаем файл по АБСОЛЮТНОМУ пути
+        if not os.path.exists(PASSWORDS_FILE):
+            print(f"  Файл не найден: {PASSWORDS_FILE}")
+            print("  Создайте первую запись (пункт 2).")
             return
             
-        with open(filename, 'r', encoding='utf-8') as f:
+        with open(PASSWORDS_FILE, 'r', encoding='utf-8') as f:
             records = json.load(f)
         
-        logger.info(f"Загружено {len(records)} записей из файла")
+        logger.info(f"Загружено {len(records)} записей из {PASSWORDS_FILE}")
         
         if not records:
             print("  Записей пока нет.")
@@ -131,7 +131,7 @@ def show_all_records(store):
         print("-" * 50)
         
     except FileNotFoundError:
-        print("  Файл passwords.json не найден!")
+        print(f"  Файл не найден: {PASSWORDS_FILE}")
         print("  Создайте первую запись (пункт 2).")
     except json.JSONDecodeError as e:
         print(f"  Ошибка формата файла: {e}")
@@ -178,8 +178,7 @@ def add_new_record(store, generator):
         # ПРЯМАЯ ПРОВЕРКА ФАЙЛА
         name_exists = False
         try:
-            with open("passwords.json", 'r', encoding='utf-8') as f:
-                import json
+            with open(PASSWORDS_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 logger.info(f"ПРЯМОЕ ЧТЕНИЕ: найдено {len(data)} записей")
                 for item in data:
