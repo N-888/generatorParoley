@@ -215,6 +215,22 @@ def add_new_record(store, generator):
             if not password:
                 print("  ❌ Ошибка: пароль не может быть пустым!")
                 return
+
+            # Проверяем наличие похожих символов
+            similar_chars = {'0': 'ноль/O', 'O': 'О/ноль', 'l': 'строчная Л/I', 'I': 'I/строчная Л', '1': 'единица/l'}
+            found_similar = [f"'{c}' ({similar_chars[c]})" for c in password if c in similar_chars]
+
+            if found_similar:
+                print(f"\n  ⚠️  ВНИМАНИЕ! В пароле обнаружены похожие символы:")
+                for s in found_similar:
+                    print(f"     • {s}")
+                print("  💡 Это может затруднить ввод пароля вручную.")
+                print("  💡 Рекомендуется заменить их на более чёткие символы.")
+
+                confirm = input("\n  Сохранить пароль с похожими символами? (да/нет): ").strip().lower()
+                if confirm != "да":
+                    print("  🔄 Введите пароль заново.")
+                    return
         else:
             print("  ❌ Неверный выбор!")
             return
@@ -225,6 +241,16 @@ def add_new_record(store, generator):
         if success:
             print(f"\n  ✅ Запись «{name}» успешно добавлена!")
             logger.info(f"Добавлена новая запись: {name}")
+
+            # Проверяем надёжность пароля
+            strength = generator.check_password_strength(password)
+            print(f"\n  📊 Оценка пароля: {strength['level']} ({strength['score']}/{strength['max_score']})")
+
+            # Если есть замечания — показываем их
+            if strength['feedback']:
+                print("  ⚠️  Рекомендации:")
+                for tip in strength['feedback']:
+                    print(f"     • {tip}")
         else:
             print("\n  ❌ Ошибка при сохранении записи!")
 
