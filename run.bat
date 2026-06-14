@@ -2,7 +2,7 @@
 chcp 65001 >nul
 echo.
 echo ========================================
-echo    🔐 МЕНЕДЖЕР ПАРОЛЕЙ
+echo    МЕНЕДЖЕР ПАРОЛЕЙ
 echo ========================================
 echo.
 cd /d "C:\Users\User\Documents\BIZNES\generatorParoley"
