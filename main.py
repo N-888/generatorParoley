@@ -448,19 +448,65 @@ def change_password(store, generator):
             print(f"\n  Новый пароль: {password}")
 
         elif choice == "2":
-            password = input("  Введите новый пароль: ").strip()
+            print("\n  ТРЕБОВАНИЯ:")
+            print("  - Минимум 8 символов")
+            print("  - Хотя бы 1 буква, 1 цифра, 1 спецсимвол")
+            print("  - НЕЛЬЗЯ: 2+ одинаковых подряд (aa, 11)")
+            print("  - НЕЛЬЗЯ: 2+ похожих из группы (0+O, l+I+1)")
+            print()
 
-            if not password:
-                print("  Ошибка: пароль не может быть пустым!")
-                return
+            while True:
+                password = input("  Введите новый пароль: ").strip()
 
-            found_similar = check_similar_chars(password)
-            if found_similar:
-                print("\n  ОШИБКА! Похожие символы:")
-                for s in found_similar:
-                    print(f"    - {s}")
-                print("  Замените их или используйте генератор.")
-                return
+                if not password:
+                    print("  [ОШИБКА] Пароль не может быть пустым!")
+                    continue
+
+                if len(password) < 8:
+                    print(f"  [ОШИБКА] Минимум 8 символов! Сейчас: {len(password)}")
+                    continue
+
+                if not any(c.isalpha() for c in password):
+                    print("  [ОШИБКА] Добавьте хотя бы 1 букву!")
+                    continue
+
+                if not any(c.isdigit() for c in password):
+                    print("  [ОШИБКА] Добавьте хотя бы 1 цифру!")
+                    continue
+
+                special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+                if not any(c in special_chars for c in password):
+                    print("  [ОШИБКА] Добавьте хотя бы 1 спецсимвол (!@#$%...)")
+                    continue
+
+                # Проверка 2+ подряд
+                has_repeated = False
+                for i in range(len(password) - 1):
+                    if password[i].lower() == password[i+1].lower():
+                        print(f"  [ОШИБКА] Два одинаковых подряд: '{password[i]}{password[i+1]}'")
+                        has_repeated = True
+                        break
+                if has_repeated:
+                    continue
+
+                # Проверка похожих из группы
+                similar_groups = [
+                    ('0', 'O', 'o'),
+                    ('l', 'I', 'i', '1', '|', '!'),
+                ]
+                similar_block = False
+                for group in similar_groups:
+                    found = [c for c in password if c in group]
+                    if len(found) >= 2:
+                        chars = ', '.join(set(found))
+                        print(f"  [ОШИБКА] Похожие из одной группы: {chars}")
+                        similar_block = True
+                        break
+                if similar_block:
+                    continue
+
+                print(f"  [OK] Пароль принят!")
+                break
 
         else:
             print("  Неверный выбор!")
