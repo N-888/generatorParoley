@@ -274,7 +274,8 @@ def add_new_record(store, generator):
             print("  - Хотя бы 1 буква (a-z, A-Z)")
             print("  - Хотя бы 1 цифра (0-9)")
             print("  - Хотя бы 1 спецсимвол (!@#$%^&*)")
-            print("  - НЕЛЬЗЯ: 2+ одинаковых символа подряд (aa, 11, !!)")
+            print("  - НЕЛЬЗЯ: 2+ одинаковых подряд (aa, 11, !!)")
+            print("  - НЕЛЬЗЯ: похожие вместе (0+O, l+I+1)")
             print("  - НЕ ВМЕСТЕ: похожие символы (0+O, l+I+1)")
             print()
 
@@ -324,14 +325,24 @@ def add_new_record(store, generator):
                 if has_repeated:
                     continue
 
-                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ вместе
-                found_similar = check_similar_chars(password)
-                if found_similar:
-                    print("\n  [ПРЕДУПРЕЖДЕНИЕ] Похожие символы в одном пароле:")
-                    for s in found_similar:
-                        print(f"    - {s}")
-                    print("  [СОВЕТ] Замените один тип: 0->2-9, O->A, l->k, I->H")
-                    # Не блокируем, только предупреждаем
+                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ ВМЕСТЕ
+                similar_groups = [
+                    ('0', 'O', 'o'),
+                    ('l', 'I', 'i', '1', '|'),
+                ]
+                similar_block = False
+                for group in similar_groups:
+                    found = [c for c in password if c in group]
+                    if len(found) >= 2:
+                        chars = ', '.join(set(found))
+                        print(f"  [ОШИБКА] Похожие символы вместе: {chars}")
+                        print("  [ПРИЧИНА] Их легко перепутать при вводе.")
+                        print("  [РЕШЕНИЕ] Оставьте только один тип: 0 ИЛИ O, l ИЛИ I")
+                        similar_block = True
+                        break
+                
+                if similar_block:
+                    continue
 
                 strength = generator.check_password_strength(password)
                 print(f"\n  [OK] Пароль принят!")
