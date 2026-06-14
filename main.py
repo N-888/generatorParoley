@@ -128,12 +128,13 @@ def add_new_record(store, generator):
             print("  Ошибка: название не может быть пустым!")
             return
 
-        # Проверяем уникальность
-        existing = store.search_records(name)
-        if existing:
-            print(f"\n  Запись '{name}' уже существует!")
-            print("  Используйте другое название или удалите старую запись.")
-            return
+        # Проверяем уникальность - сравниваем напрямую
+        all_records = store.get_all_records()
+        for record in all_records:
+            if record['name'].lower() == name.lower():
+                print(f"\n  ЗАПРЕТ! Запись '{name}' уже существует!")
+                print(f"  Удалите старую запись или используйте другое название.")
+                return
 
         login = input("  Логин или email: ").strip()
         if not login:
