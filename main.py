@@ -95,21 +95,50 @@ def show_all_records(store):
     print("  ВСЕ ЗАПИСИ:")
     print("-" * 50)
 
-    records = store.get_all_records()
+    try:
+        # Читаем файл напрямую
+        import json
+        import os
+        
+        filename = "passwords.json"
+        if not os.path.exists(filename):
+            print("  Файл passwords.json не найден!")
+            print("  Создайте хотя бы одну запись (пункт 2).")
+            return
+            
+        with open(filename, 'r', encoding='utf-8') as f:
+            records = json.load(f)
+        
+        logger.info(f"Загружено {len(records)} записей из файла")
+        
+        if not records:
+            print("  Записей пока нет.")
+            print("  Добавьте первую запись (пункт 2).")
+            return
 
-    if not records:
-        print("  Записей пока нет.")
-        return
+        for i, record in enumerate(records, 1):
+            name = record.get('name', 'Без названия')
+            login = record.get('login', 'Нет логина')
+            password = record.get('password', '')
+            
+            print(f"  {i}. {name}")
+            print(f"     Логин: {login}")
+            print(f"     Пароль: {'*' * len(password)}")
+            print()
 
-    for i, record in enumerate(records, 1):
-        print(f"  {i}. {record['name']}")
-        print(f"     Логин: {record['login']}")
-        print(f"     Пароль: {'*' * len(record['password'])}")
-        print()
-
-    print("-" * 50)
-    print(f"  Всего записей: {len(records)}")
-    print("-" * 50)
+        print("-" * 50)
+        print(f"  Всего записей: {len(records)}")
+        print("-" * 50)
+        
+    except FileNotFoundError:
+        print("  Файл passwords.json не найден!")
+        print("  Создайте первую запись (пункт 2).")
+    except json.JSONDecodeError as e:
+        print(f"  Ошибка формата файла: {e}")
+        print("  Файл повреждён.")
+    except Exception as e:
+        print(f"  Ошибка чтения: {e}")
+        logger.error(f"Ошибка чтения записей: {e}")
 
 
 # ==========================================
