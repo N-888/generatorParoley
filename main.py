@@ -146,22 +146,25 @@ def add_new_record(store, generator):
             print("  [ОШИБКА] Минимум 2 символа!")
             continue
 
-        # Проверяем уникальность
-        all_records = store.get_all_records()
+        # ПРЯМАЯ ПРОВЕРКА ФАЙЛА
         name_exists = False
-        
-        # Отладка: показываем что загружено
-        logger.info(f"Всего записей: {len(all_records)}")
-        for r in all_records:
-            logger.info(f"  Запись: '{r['name']}' (lower: '{r['name'].lower()}')")
-        
-        for record in all_records:
-            if record['name'].lower() == name.lower():
-                print(f"  [ОШИБКА] Запись '{name}' уже существует!")
-                print(f"  [ПОДСКАЗКА] Введите другое название или 'отмена' для выхода.")
-                logger.warning(f"Дубликат: {name}")
-                name_exists = True
-                break
+        try:
+            with open("passwords.json", 'r', encoding='utf-8') as f:
+                import json
+                data = json.load(f)
+                logger.info(f"ПРЯМОЕ ЧТЕНИЕ: найдено {len(data)} записей")
+                for item in data:
+                    item_name = item.get('name', '')
+                    logger.info(f"  Сравниваю: '{name.lower()}' == '{item_name.lower()}'")
+                    if item_name.lower() == name.lower():
+                        name_exists = True
+                        print(f"  [ОШИБКА] Запись '{name}' уже существует!")
+                        print(f"  [ПОДСКАЗКА] Введите другое название или 'отмена' для выхода.")
+                        break
+        except FileNotFoundError:
+            logger.info("Файл passwords.json не найден")
+        except Exception as e:
+            logger.error(f"Ошибка чтения файла: {e}")
 
         if name_exists:
             continue
