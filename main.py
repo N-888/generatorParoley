@@ -117,20 +117,29 @@ def show_all_records(store):
 # ==========================================
 
 def add_new_record(store, generator):
-    """Добавить новую запись с жёсткими проверками."""
+    """Добавить новую запись с жёсткими проверками. ВЕЗДЕ ЦИКЛЫ."""
     print("\n" + "-" * 50)
     print("  ДОБАВЛЕНИЕ НОВОЙ ЗАПИСИ:")
+    print("  Для отмены введите 'отмена' на любом этапе")
     print("-" * 50)
+
+    name = None
+    login = None
+    password = None
 
     # ==========================================
     # ЭТАП 1: НАЗВАНИЕ СЕРВИСА
     # ==========================================
     while True:
-        name = input("  Название сервиса (Gmail, Telegram...): ").strip()
+        name = input("  Название сервиса: ").strip()
+
+        if name.lower() == "отмена":
+            print("  [ОТМЕНА] Возврат в меню.")
+            return
 
         if not name:
             print("  [ОШИБКА] Название не может быть пустым!")
-            logger.warning("Пустое название")
+            print("  [ПОДСКАЗКА] Введите: Gmail, Telegram, VK...")
             continue
 
         if len(name) < 2:
@@ -142,6 +151,7 @@ def add_new_record(store, generator):
         for record in all_records:
             if record['name'].lower() == name.lower():
                 print(f"  [ОШИБКА] Запись '{name}' уже существует!")
+                print(f"  [ПОДСКАЗКА] Введите другое название или 'отмена' для выхода.")
                 logger.warning(f"Дубликат: {name}")
                 name_exists = True
                 break
@@ -151,6 +161,7 @@ def add_new_record(store, generator):
 
         if not all(c.isalnum() or c in ' _-@.' for c in name):
             print("  [ОШИБКА] Недопустимые символы!")
+            print("  [ПОДСКАЗКА] Только буквы, цифры, пробелы, дефисы.")
             continue
 
         print(f"  [OK] Название: {name}")
@@ -162,9 +173,13 @@ def add_new_record(store, generator):
     while True:
         login = input("  Логин или email: ").strip()
 
+        if login.lower() == "отмена":
+            print("  [ОТМЕНА] Возврат в меню.")
+            return
+
         if not login:
             print("  [ОШИБКА] Логин не может быть пустым!")
-            logger.warning("Пустой логин")
+            print("  [ПОДСКАЗКА] Введите email (user@mail.com) или логин (@username)")
             continue
 
         if len(login) < 3:
@@ -183,7 +198,8 @@ def add_new_record(store, generator):
         elif login.startswith('@') or login.isalnum():
             print(f"  [OK] Логин: {login}")
         else:
-            print("  [ОШИБКА] Введите email (user@mail.com) или логин (@username)")
+            print("  [ОШИБКА] Неверный формат!")
+            print("  [ПОДСКАЗКА] Email: user@mail.com | Логин: @username")
             continue
 
         break
@@ -195,8 +211,18 @@ def add_new_record(store, generator):
         print("\n  Как создать пароль?")
         print("  1. Сгенерировать автоматически (БЕЗОПАСНО)")
         print("  2. Ввести свой пароль (с проверкой)")
+        print("  0. Назад (сменить название)")
 
-        choice = input("  Ваш выбор (1/2): ").strip()
+        choice = input("  Ваш выбор (0/1/2): ").strip()
+
+        if choice == "0":
+            print("  Возврат к названию...")
+            name = None
+            break
+
+        if choice == "отмена" or choice.lower() == "отмена":
+            print("  [ОТМЕНА] Возврат в меню.")
+            return
 
         if choice == "1":
             print("\n  Настройки генерации:")
@@ -215,11 +241,12 @@ def add_new_record(store, generator):
             strength = generator.check_password_strength(password)
             print(f"  [ОЦЕНКА] {strength['level']}")
 
-            confirm = input("  Использовать этот пароль? (да/нет): ").strip().lower()
+            confirm = input("  Использовать? (да/нет/назад): ").strip().lower()
             if confirm == "да":
                 break
+            elif confirm == "назад" or choice == "0":
+                continue
             else:
-                print("  Генерирую заново...")
                 continue
 
         elif choice == "2":
@@ -234,8 +261,17 @@ def add_new_record(store, generator):
             while True:
                 password = input("  Введите пароль: ").strip()
 
+                if password.lower() == "отмена":
+                    print("  [ОТМЕНА] Возврат в меню.")
+                    return
+
+                if password == "0":
+                    password = None
+                    break
+
                 if not password:
                     print("  [ОШИБКА] Пароль не может быть пустым!")
+                    print("  [ПОДСКАЗКА] Введите пароль или '0' для возврата.")
                     continue
 
                 if len(password) < 8:
@@ -273,37 +309,50 @@ def add_new_record(store, generator):
                         print(f"    - {tip}")
                 break
 
+            if password == "0":
+                continue
             break
 
         else:
-            print("  [ОШИБКА] Выберите 1 или 2!")
+            print("  [ОШИБКА] Выберите 0, 1 или 2!")
 
     # ==========================================
     # ЭТАП 4: ПОДТВЕРЖДЕНИЕ
     # ==========================================
-    print("\n" + "-" * 50)
-    print("  ИТОГ:")
-    print(f"    Сервис: {name}")
-    print(f"    Логин: {login}")
-    print(f"    Пароль: {'*' * len(password)}")
-    print("-" * 50)
-
     while True:
-        confirm = input("  Сохранить? (да/нет): ").strip().lower()
+        print("\n" + "-" * 50)
+        print("  ИТОГ:")
+        print(f"    Сервис: {name}")
+        print(f"    Логин: {login}")
+        print(f"    Пароль: {'*' * len(password)}")
+        print("-" * 50)
+
+        confirm = input("  Сохранить? (да/нет/назад): ").strip().lower()
         if confirm == "да":
+            # Убираем проверку дубликата из store.add_record
+            #因为我们 уже проверили выше
             success = store.add_record(name, login, password)
             if success:
                 print(f"\n  [УСПЕХ] Запись '{name}' сохранена!")
                 logger.info(f"Создана: {name}")
             else:
-                print("\n  [ОШИБКА] Не удалось сохранить!")
-                logger.error(f"Ошибка: {name}")
+                print("\n  [ОШИБКА] Ошибка сохранения!")
+                print("  [ПОДСКАЗКА] Попробуйте ещё раз или 'отмена' для выхода.")
+                logger.error(f"Ошибка сохранения: {name}")
+                continue
             return
         elif confirm == "нет":
             print("  [ОТМЕНА] Запись не сохранена.")
             return
+        elif confirm == "назад":
+            # Возврат к вводу пароля
+            password = None
+            break
+        elif confirm == "отмена":
+            print("  [ОТМЕНА] Возврат в меню.")
+            return
         else:
-            print("  [ОШИБКА] Введите 'да' или 'нет'!")
+            print("  [ОШИБКА] Введите 'да', 'нет' или 'отмена'!")
 
 
 # ==========================================

@@ -170,13 +170,6 @@ class PasswordStore:
                 logger.error("Попытка добавить запись с пустыми полями")
                 return False
 
-            # Проверяем, нет ли уже такой записи
-            for record in self.records:
-                if record['name'].lower() == name.lower():
-                    logger.warning(f"Запись «{name}» уже существует")
-                    print(f"  ⚠️  Запись «{name}» уже существует!")
-                    return False
-
             # Создаём новую запись
             new_record = {
                 "name": name,           # Название сервиса
