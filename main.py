@@ -445,7 +445,13 @@ def change_password(store, generator):
                     print("  [РЕШЕНИЕ] Исправьте все ошибки.")
                     continue
 
-                print(f"  [OK] Пароль принят!")
+                strength = generator.check_password_strength(password)
+                print(f"\n  [OK] Пароль принят!")
+                print(f"  [ОЦЕНКА] {strength['level']} ({strength['score']}/{strength['max_score']})")
+                if strength['feedback']:
+                    print("  [РЕКОМЕНДАЦИИ]:")
+                    for tip in strength['feedback']:
+                        print(f"    - {tip}")
                 break
 
         else:
