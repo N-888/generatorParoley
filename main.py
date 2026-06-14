@@ -57,12 +57,21 @@ SIMILAR_CHARS = {
 
 
 def check_similar_chars(password):
-    """Проверить пароль на похожие символы."""
-    found = []
-    for char in password:
-        if char in SIMILAR_CHARS:
-            found.append(f"'{char}' — {SIMILAR_CHARS[char]}")
-    return found
+    """Проверить пароль на похожие символы ВМЕСТЕ."""
+    # Группы похожих символов
+    similar_groups = [
+        ('0', 'O', 'o'),
+        ('l', 'I', 'i', '1', '|'),
+    ]
+    
+    warnings = []
+    for group in similar_groups:
+        found_in_group = [c for c in password if c in group]
+        if len(found_in_group) >= 2:
+            chars = ', '.join(set(found_in_group))
+            warnings.append(f"Используются похожие символы вместе: {chars}")
+    
+    return warnings
 
 
 # ==========================================
@@ -265,9 +274,8 @@ def add_new_record(store, generator):
             print("  - Хотя бы 1 буква (a-z, A-Z)")
             print("  - Хотя бы 1 цифра (0-9)")
             print("  - Хотя бы 1 спецсимвол (!@#$%^&*)")
-            print("  - ЗАПРЕЩЕНЫ: 0, O, o, l, I, i, 1, |")
-            print("  - НЕЛЬЗЯ: 3+ одинаковых символа подряд")
-            print("  - НЕЛЬЗЯ: abc, 123, qwe и другие цепочки")
+            print("  - НЕЛЬЗЯ: 2+ одинаковых символа подряд (aa, 11, !!)")
+            print("  - НЕ ВМЕСТЕ: похожие символы (0+O, l+I+1)")
             print()
 
             while True:
@@ -303,44 +311,27 @@ def add_new_record(store, generator):
                     print("  [ОШИБКА] Добавьте хотя бы 1 спецсимвол (!@#$%...)")
                     continue
 
-                # ПРОВЕРКА НА ПОВТОРЯЮЩИЕСЯ СИМВОЛЫ
-                from collections import Counter
-                char_count = Counter(password.lower())
-                repeated = [(char, count) for char, count in char_count.items() if count >= 3]
-                if repeated:
-                    print("  [ОШИБКА] Слишком много повторяющихся символов!")
-                    for char, count in repeated:
-                        print(f"    - Символ '{char}' повторяется {count} раз!")
-                    print("  [ПРИЧИНА] Такие пароли легко взломать.")
-                    print("  [РЕШЕНИЕ] Используйте разные символы: aB3$kL9!")
+                # ПРОВЕРКА НА ПОВТОРЯЮЩИЕСЯ СИМВОЛЫ (2+ подряд)
+                has_repeated = False
+                for i in range(len(password) - 1):
+                    if password[i].lower() == password[i+1].lower():
+                        print(f"  [ОШИБКА] Два одинаковых символа подряд: '{password[i]}{password[i+1]}'")
+                        print("  [ПРИЧИНА] Такие пароли легко взломать.")
+                        print("  [РЕШЕНИЕ] Чередуйте символы: aB3$kL9!")
+                        has_repeated = True
+                        break
+                
+                if has_repeated:
                     continue
 
-                # ПРОВЕРКА НА ПОСЛЕДОВАТЕЛЬНОСТИ
-                import string
-                bad_sequences = ["abcdefghijklmnopqrstuvwxyz",
-                               "zyxwvutsrqponmlkjihgfedcba",
-                               "01234567890",
-                               "9876543210"]
-                lower_pw = password.lower()
-                for seq in bad_sequences:
-                    for i in range(len(seq) - 2):
-                        if seq[i:i+3] in lower_pw:
-                            print(f"  [ОШИБКА] Обнаружена последовательность: '{seq[i:i+3]}'")
-                            print("  [ПРИЧИНА] Последовательности легко угадать.")
-                            print("  [РЕШЕНИЕ] Перемешайте символы: a3B$k9L!")
-                            break
-                    else:
-                        continue
-                    break
-                else:
-                    # Нет последовательностей — продолжаем
-                    found_similar = check_similar_chars(password)
+                # ПРОВЕРКА ПОХОЖИХ СИМВОЛОВ вместе
+                found_similar = check_similar_chars(password)
                 if found_similar:
-                    print("\n  [ОШИБКА] Запрещённые похожие символы:")
+                    print("\n  [ПРЕДУПРЕЖДЕНИЕ] Похожие символы в одном пароле:")
                     for s in found_similar:
                         print(f"    - {s}")
-                    print("  [РЕШЕНИЕ] Замените: 0->2-9, O->A, l->k, I->H, 1->2")
-                    continue
+                    print("  [СОВЕТ] Замените один тип: 0->2-9, O->A, l->k, I->H")
+                    # Не блокируем, только предупреждаем
 
                 strength = generator.check_password_strength(password)
                 print(f"\n  [OK] Пароль принят!")
