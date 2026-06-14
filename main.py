@@ -33,6 +33,13 @@ import logging
 # (корректное завершение программы)
 import sys
 
+# Импортируем модуль io для работы с кодировкой
+import io
+
+# Настраиваем кодировку для Windows (чтобы работали эмодзи)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+
 # Импортируем наш модуль генератора паролей
 # (создаёт безопасные пароли)
 from password_generator import PasswordGenerator
