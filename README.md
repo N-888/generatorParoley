@@ -92,7 +92,7 @@ cd generatorParoley
 
 ```bash
 # Вариант 1: Двойной клик на файл запуск.bat
-双击: запуск.bat
+запуск.bat
 
 # Вариант 2: Через терминал
 python main.py
