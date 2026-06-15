@@ -351,8 +351,7 @@ def add_new_record(store, generator):
 
         confirm = input("  Сохранить? (да/нет/назад): ").strip().lower()
         if confirm == "да":
-            # Убираем проверку дубликата из store.add_record
-            #因为我们 уже проверили выше
+            # Проверка дубликата уже была выше
             success = store.add_record(name, login, password)
             if success:
                 print(f"\n  [УСПЕХ] Запись '{name}' сохранена!")
